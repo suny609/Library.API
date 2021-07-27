@@ -1,4 +1,5 @@
-﻿using Library.API.Services;
+﻿using Library.API.Models;
+using Library.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Library.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/authors")]
     [ApiController]
     public class AuthorController : ControllerBase
     {

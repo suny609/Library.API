@@ -8,6 +8,11 @@ namespace Library.API.Services
 {
     public class BookMockRepository : IBookRepository
     {
+        public void AddBook(BookDto book)
+        {
+            LibraryMockData.Current.Books.Add(book);
+        }
+
         public BookDto GetBookForAuthor(Guid authorId, Guid bookId)
         {
             return LibraryMockData.Current.Books.FirstOrDefault(b => b.AuthorId == authorId && b.Id == bookId);

@@ -71,5 +71,45 @@ namespace Library.API.Controllers
 
             return CreatedAtRoute(nameof(GetBook), new { authorId = authorId, bookId = newBook.Id }, newBook);
         }
+
+        [HttpDelete("{bookId}")]
+        public IActionResult DeleteBook(Guid authorId, Guid bookId)
+        {
+            if (!AuthorRepository.IsAuthorExists(authorId))
+            {
+                return NotFound();
+            }
+
+            var book = BookRepository.GetBookForAuthor(authorId, bookId);
+
+            if(book == null)
+            {
+                return NotFound();
+            }
+
+            BookRepository.DeleteBook(book);
+
+            return NoContent();
+        }
+
+        [HttpPut("{bookId}")]
+        public IActionResult UpdateBook(Guid authorId, Guid bookId, BookForUpdateDto updateBook)
+        {
+            if (!AuthorRepository.IsAuthorExists(authorId))
+            {
+                return NotFound();
+            }
+
+            var book = BookRepository.GetBookForAuthor(authorId, bookId);
+            
+            if(book == null)
+            {
+                return NotFound();
+            }
+
+            BookRepository.UpdateBook(authorId, bookId, updateBook);
+
+            return CreatedAtRoute(nameof(GetBook), new { authorId = authorId, bookId = book.Id }, book);
+        }
     }
 }

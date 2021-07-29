@@ -1,8 +1,10 @@
+using Library.API.Entities;
 using Library.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library.API
 {
@@ -28,7 +32,11 @@ namespace Library.API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddControllers(config => {
+                config.ReturnHttpNotAcceptable = true;
+                //config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+            }).AddXmlSerializerFormatters();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Library.API", Version = "v1" });
@@ -36,6 +44,8 @@ namespace Library.API
 
             services.AddScoped<IAuthorRepository, AuthorMockRepository>();
             services.AddScoped<IBookRepository, BookMockRepository>();
+
+            services.AddDbContext<LibraryDbContext>(option => option.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

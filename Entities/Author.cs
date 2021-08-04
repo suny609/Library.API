@@ -17,7 +17,7 @@ namespace Library.API.Entities
         public string Name { get; set; }
 
         [Required]
-        public DateTimeOffset Birthdata { get; set; }
+        public DateTimeOffset BirthDate { get; set; }
 
         [Required]
         [MaxLength(40)]

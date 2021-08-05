@@ -42,8 +42,9 @@ namespace Library.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Library.API", Version = "v1" });
             });
 
-            services.AddScoped<IAuthorRepository, AuthorMockRepository>();
-            services.AddScoped<IBookRepository, BookMockRepository>();
+            //services.AddScoped<IAuthorRepository, AuthorMockRepository>();
+            //services.AddScoped<IBookRepository, BookMockRepository>();
+            services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
             services.AddDbContext<LibraryDbContext>(option => option.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
         }

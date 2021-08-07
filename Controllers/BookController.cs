@@ -1,4 +1,6 @@
-﻿using Library.API.Models;
+﻿using AutoMapper;
+using Library.API.Filters;
+using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,25 +13,27 @@ namespace Library.API.Controllers
 {
     [Route("api/authors/{authorId}/books")]
     [ApiController]
+    [ServiceFilter(typeof(CheckAuthorExistFilterAttribute))]
     public class BookController : ControllerBase
     {
-        public IAuthorRepository AuthorRepository { get; }
-        public IBookRepository BookRepository { get; }
+        public IRepositoryWrapper RepositoryWrapper { get; }
 
-        public BookController(IBookRepository bookRepository, IAuthorRepository authorRepository)
+        public IMapper Mapper { get; }
+
+        public BookController(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
-            BookRepository = bookRepository;
-            AuthorRepository = authorRepository;
+            RepositoryWrapper = repositoryWrapper;
+            Mapper = mapper;
         }
 
-        public ActionResult<List<BookDto>> GetBooks(Guid authorId)
+        public async Task<ActionResult<List<BookDto>>> GetBooksAsync(Guid authorId)
         {
-            if (!AuthorRepository.IsAuthorExists(authorId))
+            if (!await RepositoryWrapper.Author.IsExistAsync(authorId))
             {
                 return NotFound();
             }
 
-            return BookRepository.GetBooksForAuthor(authorId).ToList();
+            // var books = RepositoryWrapper.Book.
         }
 
         [HttpGet("{bookId}", Name = nameof(GetBook))]

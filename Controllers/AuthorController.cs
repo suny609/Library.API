@@ -1,4 +1,6 @@
-﻿using Library.API.Models;
+﻿using AutoMapper;
+using Library.API.Entities;
+using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,22 +15,31 @@ namespace Library.API.Controllers
     [ApiController]
     public class AuthorController : ControllerBase
     {
-        public IAuthorRepository AuthorRepository { get; }
-        public AuthorController(IAuthorRepository authorRepository)
+        
+        public IMapper Mapper { get; }
+
+        public IRepositoryWrapper RepositoryWrapper { get; }
+
+        public AuthorController(IRepositoryWrapper repositoryWrapper, IMapper mapper)
         {
-            AuthorRepository = authorRepository;
+            RepositoryWrapper = repositoryWrapper;
+            Mapper = mapper;
         }
 
         [HttpGet]
-        public ActionResult<List<AuthorDto>> GetAuthors()
+        public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthorsAsync()
         {
-            return AuthorRepository.GetAuthors().ToList();
+            var authors = (await RepositoryWrapper.Author.GetAllAsync()).OrderBy(author => author.Name);
+
+            var authorDtoList = Mapper.Map<IEnumerable<AuthorDto>>(authors);
+
+            return authorDtoList.ToList();
         }
 
-        [HttpGet("{authorId}", Name = nameof(GetAuthor))]
-        public ActionResult<AuthorDto> GetAuthor(Guid authorId)
+        [HttpGet("{authorId}", Name = nameof(GetAuthorAsync))]
+        public async Task<ActionResult<AuthorDto>> GetAuthorAsync(Guid authorId)
         {
-            var author = AuthorRepository.GetAuthor(authorId);
+            var author = await RepositoryWrapper.Author.GetByIdAsync(authorId);
 
             if(author == null)
             {
@@ -36,37 +47,50 @@ namespace Library.API.Controllers
             }
             else
             {
-                return author;
+                var authorDto = Mapper.Map<AuthorDto>(author);
+
+                return authorDto;
             }
         }
 
         [HttpPost]
-        public IActionResult CreateAuthor(AuthorForCreationDto authorForCreationDto)
+        public async Task<IActionResult> CreateAuthorAsync(AuthorForCreationDto authorForCreationDto)
         {
-            var authorDto = new AuthorDto
+            var author = Mapper.Map<Author>(authorForCreationDto);
+
+            RepositoryWrapper.Author.Create(author);
+
+            var result = await RepositoryWrapper.Author.SaveAsync();
+
+            if(!result)
             {
-                Name = authorForCreationDto.Name,
-                Age = authorForCreationDto.Age,
-                Email = authorForCreationDto.Email
-            };
+                throw new Exception("创建资源autor失败");
+            }
 
-            AuthorRepository.AddAuthor(authorDto);
+            var authorDto = Mapper.Map<AuthorDto>(author);
 
-            return CreatedAtRoute(nameof(GetAuthor), new { authorId = authorDto.Id }, authorDto);
+            return CreatedAtRoute(nameof(GetAuthorAsync), new { authorId = authorDto.Id }, authorDto);
 
         }
 
         [HttpDelete("{authorId}")]
-        public IActionResult DeleteAuthor(Guid authorId)
+        public async Task<IActionResult> DeleteAuthorAsync(Guid authorId)
         {
-            var author = AuthorRepository.GetAuthor(authorId);
+            var author = await RepositoryWrapper.Author.GetByIdAsync(authorId);
 
-            if(author == null)
+            if (author == null)
             {
                 return NotFound();
             }
 
-            AuthorRepository.DeleteAuthor(author);
+            RepositoryWrapper.Author.Delete(author);
+
+            var result = await RepositoryWrapper.Author.SaveAsync();
+
+            if (!result)
+            {
+                throw new Exception("删除资源author失败");
+            }
 
             return NoContent();
         }

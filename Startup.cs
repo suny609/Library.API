@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
+using Library.API.Filters;
 
 namespace Library.API
 {
@@ -47,6 +48,10 @@ namespace Library.API
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
             services.AddDbContext<LibraryDbContext>(option => option.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddScoped<CheckAuthorExistFilterAttribute>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

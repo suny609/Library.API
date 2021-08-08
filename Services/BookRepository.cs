@@ -22,9 +22,19 @@ namespace Library.API.Services
             throw new NotImplementedException();
         }
 
+        public async Task<Book> GetBookAsync(Guid authorId, Guid bookId)
+        {
+            return await DbContext.Set<Book>().FirstOrDefaultAsync(book => book.AuthorId == authorId && book.Id == bookId);
+        }
+
         public BookDto GetBookForAuthor(Guid authorId, Guid bookId)
         {
             throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<Book>> GetBooksAsync(Guid authorId)
+        {
+            return Task.FromResult(DbContext.Set<Book>().Where(book => book.AuthorId == authorId).AsEnumerable());
         }
 
         public IEnumerable<BookDto> GetBooksForAuthor(Guid authorId)
@@ -36,5 +46,10 @@ namespace Library.API.Services
         {
             throw new NotImplementedException();
         }
+
+        //public void Create(Book book)
+        //{
+        //    base.Create
+        //}
     }
 }

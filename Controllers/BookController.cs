@@ -3,6 +3,8 @@ using Library.API.Entities;
 using Library.API.Filters;
 using Library.API.Models;
 using Library.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,6 +17,7 @@ namespace Library.API.Controllers
     [Route("api/authors/{authorId}/books")]
     [ApiController]
     [ServiceFilter(typeof(CheckAuthorExistFilterAttribute))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class BookController : ControllerBase
     {
         public IRepositoryWrapper RepositoryWrapper { get; }

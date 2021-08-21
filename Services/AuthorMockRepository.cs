@@ -1,4 +1,6 @@
 ﻿using Library.API.Entities;
+using Library.API.Filters;
+using Library.API.Helpers;
 using Library.API.Models;
 using System;
 using System.Collections.Generic;
@@ -33,6 +35,11 @@ namespace Library.API.Services
         }
 
         public Task<IEnumerable<Author>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PageList<Author>> GetAllAsync(AuthorResourceParameters parameters)
         {
             throw new NotImplementedException();
         }

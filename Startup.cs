@@ -50,33 +50,38 @@ namespace Library.API
             //services.AddScoped<IBookRepository, BookMockRepository>();
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
-            services.AddDbContext<LibraryDbContext>(option => option.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<LibraryDbContext>(option => option.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
+                optionBuilder => optionBuilder.MigrationsAssembly(typeof(Startup).Assembly.GetName().Name)));
 
             services.AddAutoMapper(typeof(Startup));
 
             services.AddScoped<CheckAuthorExistFilterAttribute>();
 
+            services.AddIdentity<User, Role>()
+                .AddEntityFrameworkStores<LibraryDbContext>();
+
             var tokenSection = Configuration.GetSection("Security:Token");
 
             services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options => {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options => {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuer = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = tokenSection["Issuer"],
-                        ValidAudience = tokenSection["Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSection["Key"])),
-                        ClockSkew = TimeSpan.Zero
-                    };
-                });
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuer = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = tokenSection["Issuer"],
+                    ValidAudience = tokenSection["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSection["Key"])),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
+            
 
         }
 

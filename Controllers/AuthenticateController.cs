@@ -92,9 +92,9 @@ namespace Library.API.Controllers
         }
 
         [HttpPost("token2", Name = nameof(GenerateTokenAsync))]
-        public async IActionResult GenerateTokenAsync(LoginUser loginUser)
+        public async Task<IActionResult> GenerateTokenAsync(LoginUser loginUser)
         {
-            var user = await UserManager.FindByEmailAsync(loginUser.UserName);
+            var user = await UserManager.FindByNameAsync(loginUser.UserName);
 
             if(user == null)
             {

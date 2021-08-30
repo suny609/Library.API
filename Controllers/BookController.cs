@@ -17,7 +17,9 @@ namespace Library.API.Controllers
     [Route("api/authors/{authorId}/books")]
     [ApiController]
     [ServiceFilter(typeof(CheckAuthorExistFilterAttribute))]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "Administrator, Manager")]
+    // [Authorize(Policy = "ManagerOnly")]
+    [Authorize(Policy = "RegisteredMoreThan3Days")]
     public class BookController : ControllerBase
     {
         public IRepositoryWrapper RepositoryWrapper { get; }

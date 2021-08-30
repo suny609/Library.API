@@ -2,18 +2,24 @@ using Library.API.Entities;
 using Library.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Library.API.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Library.API.Helpers;
 
 namespace Library.API
 {
@@ -30,36 +36,23 @@ namespace Library.API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers(config =>
-            {
+            services.AddControllers(config => {
                 config.ReturnHttpNotAcceptable = true;
-                
                 config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
             }).AddXmlSerializerFormatters();
 
-            services.AddAuthorization(options => {
-                options.AddPolicy("ManagerOnly", builder => builder.RequireClaim("ManagerId")); 
-                options.AddPolicy("LimitedUsers", builder => builder.RequireClaim("UserId", new string[] { "1", "2", "3" }));
-                options.AddPolicy("RegisteredMoreThan3Days", builder => builder.Requirements.Add(new RegisteredMoreThan3DaysRequirement()));
-            });
-            //services.AddMvc(config =>
-            //{
-            //    config.EnableEndpointRouting = false;
-
-            //    config.ReturnHttpNotAcceptable = true;
-            //    config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
-            //});
 
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
-			services.AddAutoMapper(typeof(Startup));
 
             services.AddDbContext<LibraryDbContext>(option => option.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
                 optionBuilder => optionBuilder.MigrationsAssembly(typeof(Startup).Assembly.GetName().Name)));
-                        services.AddScoped<CheckAuthorExistFilterAttribute>();
+
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddScoped<CheckAuthorExistFilterAttribute>();
 
             services.AddIdentity<User, Role>()
-                .AddEntityFrameworkStores<LibraryDbContext>()
-                .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<LibraryDbContext>();
 
             var tokenSection = Configuration.GetSection("Security:Token");
 
@@ -82,6 +75,9 @@ namespace Library.API
                     ClockSkew = TimeSpan.Zero
                 };
             });
+
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,23 +86,22 @@ namespace Library.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library.API v1"));
             }
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-			
 
             app.UseHttpsRedirection();
 
-            // app.UseMvc();
+            app.UseRouting();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
 
-
+            
         }
     }
 }

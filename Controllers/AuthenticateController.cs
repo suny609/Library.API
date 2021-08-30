@@ -81,6 +81,7 @@ namespace Library.API.Controllers
 
             if (result.Succeeded)
             {
+                await AddUserToRoleAsync(user, "Administrator");
                 return Ok();
             }
             else
@@ -134,7 +135,7 @@ namespace Library.API.Controllers
                     issuer: tokenConfigSection["Issuer"],
                     audience: tokenConfigSection["Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddHours(1),
+                    expires: DateTime.Now.AddMinutes(3),
                     signingCredentials: signCredential
                 );
 
@@ -147,5 +148,28 @@ namespace Library.API.Controllers
 
         }
 
+        private async Task AddUserToRoleAsync(User user, String roleName)
+        {
+            if(user == null || string.IsNullOrWhiteSpace(roleName))
+            {
+                return;
+            }
+
+            bool isRoleExist = await RoleManager.RoleExistsAsync(roleName);
+
+            if (!isRoleExist)
+            {
+                await RoleManager.CreateAsync(new Role { Name = roleName });
+            }
+            else
+            {
+                if(await UserManager.IsInRoleAsync(user, roleName))
+                {
+                    return;
+                }
+
+                await UserManager.AddToRoleAsync(user, roleName);
+            }
+        }
     }
 }
